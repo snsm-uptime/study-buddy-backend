@@ -1,0 +1,19 @@
+FROM study-buddy-base:latest
+
+# --- Environment Config ---
+ENV ENV=development
+
+# --- Add dev-only system packages ---
+RUN apt-get update && apt-get install -y git && apt-get clean
+
+# --- Install development dependencies with cache mount ---
+RUN --mount=type=cache,target=/root/.cache/pip \
+    poetry install --no-root --with dev
+
+ENV PYTHONPATH=/app/backend
+
+# --- Copy source code last to keep caching efficient ---
+COPY . .
+
+# --- Default command: launch Uvicorn for dev mode ---
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
