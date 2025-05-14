@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 
-from app.db.utils import CreatedAt, DeletedAt, UpdatedAt
 from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.utils import CreatedAt, DeletedAt, UpdatedAt
 
 
 class TimestampMixin:

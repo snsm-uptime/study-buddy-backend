@@ -1,11 +1,12 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from app.db.base import Base
-from app.db.mixins import SoftDeletableMixin, TimestampMixin
 from sqlalchemy import Float, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.base import Base
+from app.db.mixins import SoftDeletableMixin, TimestampMixin
 
 if TYPE_CHECKING:
     from app.db.models.file_chunk import FileChunk
