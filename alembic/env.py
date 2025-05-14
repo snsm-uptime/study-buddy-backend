@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from app.config import get_settings
 from app.db.base import Base
-from app.db.models import (file,  # force model import to register tables
-                           file_chunk)
+from app.db.models import file  # force model import to register tables
+from app.db.models import file_chunk
 
 # ---------------------
 # Alembic Config Setup

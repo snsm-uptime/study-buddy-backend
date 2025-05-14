@@ -1,5 +1,11 @@
 {
+  "editor.codeActionsOnSave": {"source.organizeImports": "always"},
+  "editor.formatOnSave": false,
+  "python.analysis.extraPaths": ["./app"],
+  "python.formatting.blackPath": "", // configure per computer
+  "python.analysis.importFormat": "relative",
+  "python.formatting.provider": "black",
   "python.testing.pytestArgs": ["tests"],
-  "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false
 }
