@@ -1,16 +1,18 @@
+from typing import Dict
+
 from fastapi import Depends, FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .api import health
-from .config import get_settings
-from .db.deps import get_db
+from app.api import health
+from app.config import get_settings
+from app.db.deps import get_db
 
 app = FastAPI()
 settings = get_settings()
 
 
 @app.get("/ping")
-def ping():
+def ping() -> Dict[str, str]:
     return {"status": "ok", "env": settings.env}
 
 

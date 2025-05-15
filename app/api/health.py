@@ -1,3 +1,5 @@
+from typing import Dict
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +10,6 @@ router = APIRouter()
 
 
 @router.get("/health-db")
-async def health_check(db: AsyncSession = Depends(get_db)):
+async def health_check(db: AsyncSession = Depends(get_db)) -> Dict[str, str]:
     await db.execute(text("SELECT 1"))
     return {"status": "connected"}

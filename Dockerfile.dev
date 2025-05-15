@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y git && apt-get clean
 RUN --mount=type=cache,target=/root/.cache/pip \
     poetry install --no-root --with dev
 
-ENV PYTHONPATH=/app/backend
+ENV PYTHONPATH=/app
 
 # --- Copy source code last to keep caching efficient ---
 COPY . .
