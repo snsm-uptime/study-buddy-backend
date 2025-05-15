@@ -7,8 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from app.config import get_settings
 from app.db.base import Base
-from app.db.models import file  # force model import to register tables
-from app.db.models import file_chunk
+from app.db.models import file, file_chunk
 
 # ---------------------
 # Alembic Config Setup
@@ -54,18 +53,17 @@ async def run_migrations_online():
     )
 
     async with connectable.connect() as connection:
+
+        def do_run_migrations(connection):
+            context.configure(
+                connection=connection,
+                target_metadata=target_metadata,
+                compare_type=True,
+            )
+            with context.begin_transaction():
+                context.run_migrations()
+
         await connection.run_sync(do_run_migrations)
-
-
-def do_run_migrations(connection):
-    context.configure(
-        connection=connection,
-        target_metadata=target_metadata,
-        compare_type=True,
-    )
-
-    with context.begin_transaction():
-        context.run_migrations()
 
 
 # Entrypoint
