@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
+from app.api.errors import NoItemsFoundError, UserNotFoundError
+from returns.future import future_safe, FutureSuccess, FutureFailure
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,21 +14,35 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    @future_safe
     async def get_all(self) -> list[User]:
         stmt = select(User)  # .where(User.deleted_at.is_(None))
         result = await self.session.execute(stmt)
-        return list(result.scalars().all())
+        try:
+            users = list(result.scalars().all())
+        except Exception as e:
+            raise NoItemsFoundError(str(e))
+        return users
 
-    async def get_by_id(self, user_id: uuid.UUID) -> Optional[User]:
+    @future_safe
+    async def get_by_id(self, user_id: uuid.UUID) -> User:
         stmt = select(User).where(User.id == user_id, User.deleted_at.is_(None))
         result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        user = result.scalar_one_or_none()
+        if user is None:
+            raise UserNotFoundError(user_id)
+        return user
 
-    async def get_by_email(self, email: str) -> Optional[User]:
+    @future_safe
+    async def get_by_email(self, email: str) -> User:
         stmt = select(User).where(User.email == email, User.deleted_at.is_(None))
         result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        user = result.scalar_one_or_none()
+        if user is None:
+            raise UserNotFoundError(email)
+        return user
 
+    @future_safe
     async def create(self, *, email: str, name: str, hashed_password: str) -> User:
         user = User(email=email, name=name, password=hashed_password)
         self.session.add(user)

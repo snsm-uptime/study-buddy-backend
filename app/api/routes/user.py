@@ -1,6 +1,8 @@
 from typing import Annotated
 from uuid import UUID
 
+from httpx import HTTPStatusError
+from returns.io import IOSuccess, IOFailure
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,20 +20,30 @@ async def create_user(
     payload: UserCreate,
     service: Annotated[UserService, Depends(get_user_service)],
 ) -> UserRead:
-    existing = await service.get_user_by_email(payload.email)
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    user = await service.create_user(payload)
-    return UserRead.model_validate(user, from_attributes=True)
+    result = await service.create_user(payload)
+    match result:
+        case IOSuccess(value):
+            return value.unwrap()
+        case IOFailure(value):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(value.failure().args[0]),
+            )
 
 
 @router.get("/", response_model=list[UserRead])
 async def get_users(
     service: Annotated[UserService, Depends(get_user_service)],
 ) -> list[UserRead]:
-    users = await service.get_users()
-    return [UserRead.model_validate(user, from_attributes=True) for user in users]
+    result = await service.get_users()
+    match result:
+        case IOSuccess(values):
+            return values.unwrap()
+        case IOFailure(value):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=str(value.failure().args[0]),
+            )
 
 
 @router.get("/{user_id}", response_model=UserRead)
@@ -39,7 +51,9 @@ async def get_user_by_id(
     user_id: UUID,
     service: Annotated[UserService, Depends(get_user_service)],
 ) -> UserRead:
-    user = await service.get_user_by_id(user_id)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return UserRead.model_validate(user, from_attributes=True)
+    result = await service.get_user_by_id(user_id)
+    match result:
+        case IOSuccess(value):
+            return value.unwrap()
+        case IOFailure(value):
+            raise HTTPException(status_code=404, detail=str(value.failure().args[0]))
