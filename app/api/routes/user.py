@@ -26,6 +26,14 @@ async def create_user(
     return UserRead.model_validate(user, from_attributes=True)
 
 
+@router.get("/", response_model=list[UserRead])
+async def get_users(
+    service: Annotated[UserService, Depends(get_user_service)],
+) -> list[UserRead]:
+    users = await service.get_users()
+    return [UserRead.model_validate(user, from_attributes=True) for user in users]
+
+
 @router.get("/{user_id}", response_model=UserRead)
 async def get_user_by_id(
     user_id: UUID,

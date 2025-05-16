@@ -17,6 +17,9 @@ class UserService:
             email=user_data.email, name=user_data.name, hashed_password=hashed
         )
 
+    async def get_users(self) -> list[User]:
+        return await self.user_repository.get_all()
+
     async def get_user_by_id(self, user_id: UUID) -> Optional[User]:
         return await self.user_repository.get_by_id(user_id)
 

@@ -20,7 +20,9 @@ class File(Base, TimestampMixin, SoftDeletableMixin):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True),
+        ForeignKey("users.id", name="fk_files_user_id", ondelete="CASCADE"),
+        nullable=False,
     )
     title: Mapped[str] = mapped_column(String, nullable=False)
     author: Mapped[str | None] = mapped_column(String, nullable=True)

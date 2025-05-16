@@ -10,7 +10,8 @@ class Settings:
     @property
     def database_url(self) -> str:
         return os.getenv(
-            "DATABASE_URL", "postgresql+asyncpg://postgres:postgres@db:5432/study_buddy"
+            "DATABASE_URL",
+            "postgresql+asyncpg://postgres:postgres@study-buddy-db:5432/study_buddy",
         )
 
     @property

@@ -12,6 +12,11 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    async def get_all(self) -> list[User]:
+        stmt = select(User)  # .where(User.deleted_at.is_(None))
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
     async def get_by_id(self, user_id: uuid.UUID) -> Optional[User]:
         stmt = select(User).where(User.id == user_id, User.deleted_at.is_(None))
         result = await self.session.execute(stmt)
@@ -27,6 +32,7 @@ class UserRepository:
         self.session.add(user)
         await self.session.flush()
         await self.session.refresh(user)
+        await self.session.commit()
         return user
 
     async def soft_delete(self, user_id: uuid.UUID) -> None:

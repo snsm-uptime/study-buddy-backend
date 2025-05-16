@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
 from typing import Annotated
 
-from sqlalchemy import TIMESTAMP, func
+from sqlalchemy import TIMESTAMP, func, null
 from sqlalchemy.orm import mapped_column
 
-# -- Base shared timestamp column type --
-Timestamp = Annotated[
+# -- Semantic timestamp aliases for clarity & intent --
+CreatedAt = Annotated[
     datetime,
     mapped_column(
         TIMESTAMP(timezone=True),
@@ -14,10 +14,6 @@ Timestamp = Annotated[
     ),
 ]
 
-# -- Semantic timestamp aliases for clarity & intent --
-CreatedAt = Timestamp
-DeletedAt = Timestamp
-
 UpdatedAt = Annotated[
     datetime,
     mapped_column(
@@ -25,5 +21,14 @@ UpdatedAt = Annotated[
         default=lambda: datetime.now(timezone.utc),
         server_default=func.now(),
         server_onupdate=func.now(),  # ✅ updates on modification
+    ),
+]
+
+DeletedAt = Annotated[
+    datetime,
+    mapped_column(
+        TIMESTAMP(timezone=True),
+        default=None,
+        server_default=null(),
     ),
 ]
