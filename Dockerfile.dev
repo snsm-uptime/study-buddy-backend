@@ -7,8 +7,9 @@ ENV ENV=development
 RUN apt-get update && apt-get install -y git && apt-get clean
 
 # --- Install development dependencies with cache mount ---
-RUN --mount=type=cache,target=/root/.cache/pip \
-    poetry install --no-root --with dev
+RUN --mount=type=cache,target=/root/.cache/pip poetry install --no-root --with dev
+
+RUN poetry run mypy --install-types --non-interactive
 
 ENV PYTHONPATH=/app
 

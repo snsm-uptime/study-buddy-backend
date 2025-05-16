@@ -13,6 +13,12 @@ repos:
 
   - repo: local
     hooks:
+      - id: clean-pycache
+        name: Clean Pycache
+        entry: bash -c 'find . -name "__pycache__" -type d -exec rm -r {} + && find . -name "*.pyc" -type f -delete'
+        language: system
+        pass_filenames: false
+
       - id: docker-pytest
         name: Run pytest inside Docker
         entry: docker exec study-buddy-backend-dev poetry run pytest
