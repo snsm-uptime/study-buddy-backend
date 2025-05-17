@@ -4,9 +4,10 @@ from uuid import UUID
 class UserNotFoundError(Exception):
     """Custom exception for user not found errors."""
 
-    def __init__(self, identifier: str):
+    def __init__(self, identifier: str, message: str = ""):
         self.identifier = identifier
-        super().__init__(f"User with identifier {identifier} not found.")
+        self.message = message
+        super().__init__(f"User with identifier {identifier} not found. " + message)
 
 
 class FormValidationError(Exception):

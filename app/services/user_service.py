@@ -1,17 +1,12 @@
-from re import U
-from typing import List, Optional
-from unittest import result
+from email import message
+from typing import List
 from uuid import UUID
 
-from app.api.routes.user import IOFailure, IOSuccess
-from fastapi import Form
-from returns.future import FutureResult
-from returns.io import IOResult
-from returns.result import Failure, Result, Success
+from returns.io import IOFailure, IOResult, IOSuccess
 
-from app.api.errors import UserNotFoundError, NoItemsFoundError, FormValidationError
 from app.db.models.user import User
 from app.db.repositories.user_repository import UserRepository
+from app.errors import FormValidationError, NoItemsFoundError, UserNotFoundError
 from app.schemas.user import UserCreate, UserRead
 from app.utils.security import hash_password
 
@@ -22,7 +17,7 @@ class UserService:
 
     async def create_user(
         self, user_data: UserCreate
-    ) -> IOResult[User, FormValidationError]:
+    ) -> IOResult[UserRead, FormValidationError]:
         existing = await self.user_repository.get_by_email(user_data.email)
         if isinstance(existing, IOSuccess):
             return IOFailure(
@@ -42,14 +37,21 @@ class UserService:
                     UserRead.model_validate(value.unwrap(), from_attributes=True)
                 )
             case IOFailure(value):
-                raise IOFailure(
+                return IOFailure(
                     FormValidationError(
                         field="email",
-                        message=value.failure().args[0],
+                        message=str(value.failure().args[0]),
+                    )
+                )
+            case _:
+                return IOFailure(
+                    FormValidationError(
+                        field="email",
+                        message="Unknown Error occurred while creating user",
                     )
                 )
 
-    async def get_users(self) -> IOResult[List[User], NoItemsFoundError]:
+    async def get_users(self) -> IOResult[List[UserRead], NoItemsFoundError]:
         result = await self.user_repository.get_all()
         match result:
             case IOSuccess(value):
@@ -61,8 +63,16 @@ class UserService:
                 )
             case IOFailure(value):
                 return IOFailure(NoItemsFoundError(query=value.failure().args[0]))
+            case _:
+                return IOFailure(
+                    NoItemsFoundError(
+                        query="Unknown Error occurred while getting all users",
+                    )
+                )
 
-    async def get_user_by_id(self, user_id: UUID) -> IOResult[User, UserNotFoundError]:
+    async def get_user_by_id(
+        self, user_id: UUID
+    ) -> IOResult[UserRead, UserNotFoundError]:
         result = await self.user_repository.get_by_id(user_id)
         match result:
             case IOSuccess(value):
@@ -70,9 +80,17 @@ class UserService:
                     UserRead.model_validate(value.unwrap(), from_attributes=True)
                 )
             case IOFailure(value):
-                return IOFailure(UserNotFoundError(identifier=user_id))
+                return IOFailure(
+                    UserNotFoundError(
+                        identifier=str(user_id), message=str(value.failure().args[0])
+                    )
+                )
+            case _:
+                return IOFailure(UserNotFoundError(identifier=str(user_id)))
 
-    async def get_user_by_email(self, email: str) -> IOResult[User, UserNotFoundError]:
+    async def get_user_by_email(
+        self, email: str
+    ) -> IOResult[UserRead, UserNotFoundError]:
         result = await self.user_repository.get_by_email(email)
         match result:
             case IOSuccess(value):
@@ -80,4 +98,10 @@ class UserService:
                     UserRead.model_validate(value.unwrap(), from_attributes=True)
                 )
             case IOFailure(value):
+                return IOFailure(
+                    UserNotFoundError(
+                        identifier=email, message=str(value.failure().args[0])
+                    )
+                )
+            case _:
                 return IOFailure(UserNotFoundError(identifier=email))

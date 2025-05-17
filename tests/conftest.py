@@ -1,4 +1,5 @@
 import os
+from unittest.mock import AsyncMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -8,6 +9,7 @@ from sqlalchemy.pool import NullPool
 from app.config import get_settings
 from app.db.base import Base
 from app.dependencies.database import get_db_session
+from app.dependencies.user import get_user_service
 from app.main import app
 
 settings = get_settings()
@@ -50,4 +52,12 @@ async def client(db_session: AsyncSession):
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def mock_user_service():
+    mock = AsyncMock()
+    app.dependency_overrides[get_user_service] = lambda: mock
+    yield mock
     app.dependency_overrides.clear()

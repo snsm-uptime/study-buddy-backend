@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
-from app.api.errors import NoItemsFoundError, UserNotFoundError
-from returns.future import future_safe, FutureSuccess, FutureFailure
 
+from returns.future import FutureFailure, FutureSuccess, future_safe
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.user import User
+from app.errors import NoItemsFoundError, UserNotFoundError
 
 
 class UserRepository:
@@ -30,7 +30,7 @@ class UserRepository:
         result = await self.session.execute(stmt)
         user = result.scalar_one_or_none()
         if user is None:
-            raise UserNotFoundError(user_id)
+            raise UserNotFoundError(str(user_id))
         return user
 
     @future_safe
