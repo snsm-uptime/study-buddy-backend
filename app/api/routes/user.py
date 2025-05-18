@@ -1,4 +1,4 @@
-from typing import Annotated, List, Optional, cast
+from typing import Annotated, List, Optional, Sequence, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -32,7 +32,7 @@ async def create_user(
     return None
 
 
-@router.get("/", response_model=list[UserRead])
+@router.get("/", response_model=Sequence[UserRead])
 async def get_users(
     service: Annotated[UserService, Depends(get_user_service)],
 ) -> List[UserRead]:

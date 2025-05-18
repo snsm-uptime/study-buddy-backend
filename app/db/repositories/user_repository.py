@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Sequence
 
-from returns.future import FutureFailure, FutureSuccess, future_safe
+from returns.future import future_safe
+from returns.io import IOFailure, IOSuccess
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,8 +16,8 @@ class UserRepository:
         self.session = session
 
     @future_safe
-    async def get_all(self) -> list[User]:
-        stmt = select(User)  # .where(User.deleted_at.is_(None))
+    async def get_all(self) -> Sequence[User]:
+        stmt = select(User).where(User.deleted_at.is_(None))
         result = await self.session.execute(stmt)
         try:
             users = list(result.scalars().all())
@@ -51,12 +52,13 @@ class UserRepository:
         await self.session.commit()
         return user
 
-    async def soft_delete(self, user_id: uuid.UUID) -> None:
-        stmt = select(User).where(User.id == user_id, User.deleted_at.is_(None))
-        result = await self.session.execute(stmt)
-        user = result.scalar_one_or_none()
-
-        if user is not None:
-            user.deleted_at = datetime.now(timezone.utc)
-            self.session.add(user)
-            await self.session.flush()
+    async def soft_delete(self, user_id: uuid.UUID) -> bool:
+        result = await self.get_by_id(user_id)
+        match result:
+            case IOSuccess(user):
+                user.unwrap().soft_delete()
+                await self.session.flush()
+                await self.session.commit()
+                return True
+            case _:
+                return False

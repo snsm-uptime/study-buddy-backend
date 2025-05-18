@@ -27,7 +27,7 @@ class File(Base, TimestampMixin, SoftDeletableMixin):
     title: Mapped[str] = mapped_column(String, nullable=False)
     author: Mapped[str | None] = mapped_column(String, nullable=True)
     source: Mapped[str | None] = mapped_column(Text, nullable=True)
-    size_kb: Mapped[float] = mapped_column(Float, nullable=False)
+    size_bytes: Mapped[float] = mapped_column(Float, nullable=False)
 
     # Bi-directional relationship
     chunks: Mapped[list["FileChunk"]] = relationship(

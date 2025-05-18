@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr
+from isort import Config
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class UserBase(BaseModel):
@@ -17,6 +18,4 @@ class UserRead(UserBase):
     id: uuid.UUID
     created_at: datetime
 
-
-class UserInDB(UserRead):
-    password: str
+    model_config = ConfigDict(from_attributes=True)

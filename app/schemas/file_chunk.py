@@ -4,20 +4,19 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 
-class FileBase(BaseModel):
-    author: str
-    size_bytes: float
-    source: str
-    title: str
+class FileChunkBase(BaseModel):
+    chunk_index: int
+    section: str | None = None
+    text: str
 
 
-class FileCreate(FileBase):
-    user_id: UUID
+class FileChunkCreate(FileChunkBase):
+    file_id: UUID
 
 
-class FileRead(FileBase):
+class FileChunkRead(FileChunkBase):
     id: UUID
-    user_id: UUID
+    file_id: UUID
     created_at: datetime
     updated_at: datetime
 

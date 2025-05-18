@@ -1,10 +1,9 @@
 from email import message
-from typing import List
+from typing import List, Sequence
 from uuid import UUID
 
 from returns.io import IOFailure, IOResult, IOSuccess
 
-from app.db.models.user import User
 from app.db.repositories.user_repository import UserRepository
 from app.errors import FormValidationError, NoItemsFoundError, UserNotFoundError
 from app.schemas.user import UserCreate, UserRead
@@ -33,9 +32,7 @@ class UserService:
         )
         match created_user_response:
             case IOSuccess(value):
-                return IOSuccess(
-                    UserRead.model_validate(value.unwrap(), from_attributes=True)
-                )
+                return IOSuccess(UserRead.model_validate(value.unwrap()))
             case IOFailure(value):
                 return IOFailure(
                     FormValidationError(
@@ -51,16 +48,11 @@ class UserService:
                     )
                 )
 
-    async def get_users(self) -> IOResult[List[UserRead], NoItemsFoundError]:
+    async def get_users(self) -> IOResult[Sequence[UserRead], NoItemsFoundError]:
         result = await self.user_repository.get_all()
         match result:
             case IOSuccess(value):
-                return IOSuccess(
-                    [
-                        UserRead.model_validate(u, from_attributes=True)
-                        for u in value.unwrap()
-                    ]
-                )
+                return IOSuccess([UserRead.model_validate(u) for u in value.unwrap()])
             case IOFailure(value):
                 return IOFailure(NoItemsFoundError(query=value.failure().args[0]))
             case _:
@@ -76,9 +68,7 @@ class UserService:
         result = await self.user_repository.get_by_id(user_id)
         match result:
             case IOSuccess(value):
-                return IOSuccess(
-                    UserRead.model_validate(value.unwrap(), from_attributes=True)
-                )
+                return IOSuccess(UserRead.model_validate(value.unwrap()))
             case IOFailure(value):
                 return IOFailure(
                     UserNotFoundError(
@@ -94,9 +84,7 @@ class UserService:
         result = await self.user_repository.get_by_email(email)
         match result:
             case IOSuccess(value):
-                return IOSuccess(
-                    UserRead.model_validate(value.unwrap(), from_attributes=True)
-                )
+                return IOSuccess(UserRead.model_validate(value.unwrap()))
             case IOFailure(value):
                 return IOFailure(
                     UserNotFoundError(
