@@ -1,3 +1,4 @@
+from multiprocessing import Value
 from typing import Sequence
 from uuid import UUID
 
@@ -18,13 +19,12 @@ class FileChunkRepository:
         self.session = session
 
     @future_safe
-    async def create(self, file_chunk: FileChunkCreate) -> FileChunk:
-        chunk = FileChunk(**file_chunk.model_dump())
-        self.session.add(chunk)
-        await self.session.flush()
-        await self.session.refresh(chunk)
-        await self.session.commit()
-        return chunk
+    async def create_many(self, file_chunks: list[FileChunk]) -> None:
+        try:
+            self.session.add_all(file_chunks)
+            await self.session.flush()
+        except Exception as e:
+            raise ValueError(f"Failed to create file chunks: {e}")
 
     @future_safe
     async def get_all(self) -> Sequence[FileChunk]:
@@ -56,9 +56,8 @@ class FileChunkRepository:
         result = await self.get_by_id(file_id)
         match result:
             case IOSuccess(file):
-                file.unwrap().soft_delete()
-                await self.session.flush()
-                await self.session.commit()
+                async with self.session.begin():
+                    file.unwrap().soft_delete()
                 return True
             case _:
                 return False

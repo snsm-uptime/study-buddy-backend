@@ -3,7 +3,6 @@ from uuid import UUID
 
 from returns.future import future_safe
 from returns.io import IOFailure, IOResult, IOSuccess
-from returns.result import Failure, Success
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -35,7 +34,6 @@ class FileRepository:
         self.session.add(file)
         await self.session.flush()
         await self.session.refresh(file)
-        await self.session.commit()
         return file
 
     @future_safe
@@ -64,9 +62,8 @@ class FileRepository:
         result = await self.get_by_id(file_id)
         match result:
             case IOSuccess(file):
-                file.unwrap().soft_delete()
-                await self.session.flush()
-                await self.session.commit()
+                async with self.session.begin():
+                    file.unwrap().soft_delete()
                 return True
             case _:
                 return False

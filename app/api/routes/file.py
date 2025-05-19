@@ -21,11 +21,11 @@ async def upload_file(
     user_id: UUID = Form(...),
 ) -> FileRead:
     content = await upload.read()
-    result = await service.process_and_store_file(
+    result = await service.upload_and_process_file(
         author=author,
         content=content,
         filename=upload.filename if upload.filename else "Unknown",
-        size=upload.size if upload.size else len(content),
+        size_bytes=upload.size if upload.size else len(content),
         source=source,
         user_id=user_id,
     )
@@ -35,7 +35,7 @@ async def upload_file(
         case IOFailure(err):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=err.failure(),
+                detail=err.failure().args[0],
             )
         case _:
             raise HTTPException(

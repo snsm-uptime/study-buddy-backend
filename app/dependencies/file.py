@@ -13,5 +13,4 @@ def get_file_service(
 ) -> FileService:
     r = FileRepository(db)
     cr = FileChunkRepository(db)
-    cs = FileChunkService(cr)
-    return FileService(r, cs)
+    return FileService(db, r, cr)
