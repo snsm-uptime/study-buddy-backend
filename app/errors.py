@@ -32,3 +32,11 @@ class FileNotFoundError(Exception):
     def __init__(self, identifier: str):
         self.identifier = identifier
         super().__init__(f"File {identifier} not found. ")
+
+
+class TextExtractionError(Exception):
+    """Raised when text could not be extracted from a file."""
+
+    def __init__(self, file_type: str):
+        self.file_type = file_type
+        super().__init__(f"Text extraction failed for {file_type} file.")

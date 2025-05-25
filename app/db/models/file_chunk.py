@@ -25,7 +25,11 @@ class FileChunk(Base, SoftDeletableMixin, TimestampMixin):
     )
 
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    content_type: Mapped[str | None] = mapped_column(Text, nullable=True)
+    end_time: Mapped[float | None] = mapped_column(nullable=True)
+    page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
     section: Mapped[str] = mapped_column(Text, nullable=True)
+    start_time: Mapped[float | None] = mapped_column(nullable=True)
     text: Mapped[str] = mapped_column(Text, nullable=False)
 
     file: Mapped["File"] = relationship(back_populates="chunks")

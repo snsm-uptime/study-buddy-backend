@@ -6,7 +6,11 @@ from pydantic import BaseModel, ConfigDict
 
 class FileChunkBase(BaseModel):
     chunk_index: int
+    content_type: str | None = None
+    end_time: float | None = None
+    page_number: int | None = None
     section: str | None = None
+    start_time: float | None = None
     text: str
 
 
