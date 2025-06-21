@@ -1,4 +1,3 @@
-from .pdf_parser import 
+from .pdf_parser import PDFPlumberParser
 
-__all__ = [
-]
+__all__ = [PDFPlumberParser]

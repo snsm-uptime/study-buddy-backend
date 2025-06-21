@@ -16,7 +16,7 @@ class PDFPlumberParser(FileParserProtocol):
 
     @future_safe
     def parse(self, file: BinaryIO) -> FutureResult[list[ChunkData], str]:
-        return asyncio.to_thread(self._parse_sync, file)
+        return FutureResult.from_future(asyncio.to_thread(self._parse_sync, file))
 
     def _parse_sync(self, file: BinaryIO) -> list[ChunkData]:
         try:
