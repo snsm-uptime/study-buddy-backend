@@ -1,10 +1,11 @@
-from typing import Protocol
+from typing import BinaryIO, Protocol
 
+from app.schemas.file_chunk import ChunkData
 from returns.future import FutureResult
 
 
-class FileParser(Protocol):
-    def parse(self, file_path: str) -> FutureResult[str, Exception]:
+class FileParserProtocol(Protocol):
+    def parse(self, file: BinaryIO) -> FutureResult[ChunkData, Exception]:
         """
         Parses the file at the given path and returns the extracted text.
 

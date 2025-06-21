@@ -1,7 +1,17 @@
 from datetime import datetime
 from uuid import UUID
+from pydantic import BaseModel, ConfigDict, Field
 
-from pydantic import BaseModel, ConfigDict
+
+# Transient use in LangGraph pipeline
+class ChunkData(BaseModel):
+    content: str
+    chunk_index: int
+    section: str | None = None
+    page_number: int | None = None
+    start_time: float | None = None
+    end_time: float | None = None
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
 class FileChunkBase(BaseModel):
@@ -11,7 +21,7 @@ class FileChunkBase(BaseModel):
     page_number: int | None = None
     section: str | None = None
     start_time: float | None = None
-    text: str
+    content: str
 
 
 class FileChunkCreate(FileChunkBase):
