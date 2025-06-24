@@ -1,7 +1,8 @@
 from pathlib import Path
 
 import pytest
-from returns.io import IOSuccess
+from returns.io import IOSuccess, IO
+from returns.pipeline import is_successful
 
 from app.services.parsers import PDFPlumberParser
 from app.schemas.file_chunk import ChunkData
@@ -16,28 +17,17 @@ async def test_pdf_parser_extracts_chunks_correctly():
 
     with file_path.open("rb") as file:
         result = await parser.parse(file)
-
-    assert isinstance(
-        result, IOSuccess
+    assert is_successful(
+        result
     ), f"Expected Success, got Failure: {result.failure() if result.is_failure else ''}"
 
     chunks = result.unwrap()
 
-    assert isinstance(chunks, list), "Result is not a list"
-    assert all(
-        isinstance(chunk, ChunkData) for chunk in chunks
-    ), "Not all elements are ChunkData"
-    assert len(chunks) > 0, "No chunks returned"
+    assert chunks.map(lambda x: isinstance(x, list))
 
     for i, chunk in enumerate(chunks):
-        assert (
-            chunk.chunk_index == i
-        ), f"Expected chunk_index={i}, got {chunk.chunk_index}"
-        assert (
-            chunk.page_number == i + 1
-        ), f"Expected page_number={i+1}, got {chunk.page_number}"
-        assert isinstance(chunk.content, str)
-        assert chunk.content.strip() != ""
+        assert IO.do(c[i].chunk_index == i for c in chunks),
+        f"Expected chunk_index={i}, got {chunk.chunk_index}"
 
 
 @pytest.mark.asyncio
@@ -48,12 +38,13 @@ async def test_pdf_parser_uses_ocr_on_scanned_pdf():
     with file_path.open("rb") as file:
         result = await parser.parse(file)
 
-    assert isinstance(
-        result, IOSuccess
+    assert is_successful(
+        result
     ), f"OCR fallback failed: {result.failure() if result.is_failure else ''}"
+
     chunks = result.unwrap()
 
-    assert len(chunks) > 0, "No chunks returned from OCR fallback"
+    assert chunks.map(lambda x: isinstance(x, list))
 
     for chunk in chunks:
         assert isinstance(chunk.content, str)

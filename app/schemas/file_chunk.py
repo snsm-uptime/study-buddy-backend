@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -11,7 +11,7 @@ class ChunkData(BaseModel):
     page_number: int | None = None
     start_time: float | None = None
     end_time: float | None = None
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class FileChunkBase(BaseModel):

@@ -25,6 +25,7 @@ python-multipart = "^0.0.20"
 pdfplumber = "^0.11.6"
 pillow = "^11.2.1"
 pytesseract = "^0.3.13"
+langgraph = "^0.4.8"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

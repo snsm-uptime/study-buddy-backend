@@ -15,8 +15,8 @@ class PDFPlumberParser(FileParserProtocol):
     """Parses PDF files into chunks using pdfplumber with OCR fallback per page."""
 
     @future_safe
-    def parse(self, file: BinaryIO) -> FutureResult[list[ChunkData], str]:
-        return FutureResult.from_future(asyncio.to_thread(self._parse_sync, file))
+    async def parse(self, file: BinaryIO) -> list[ChunkData]:
+        return await asyncio.to_thread(self._parse_sync, file)
 
     def _parse_sync(self, file: BinaryIO) -> list[ChunkData]:
         try:
