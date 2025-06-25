@@ -4,6 +4,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 # Transient use in LangGraph pipeline
+class PageText(BaseModel):
+    text: str
+    page_number: int
+
+
 class ChunkData(BaseModel):
     content: str
     chunk_index: int

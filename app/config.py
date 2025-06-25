@@ -27,8 +27,24 @@ class Settings:
         return os.getenv("LLM_MODE", "ollama")
 
     @property
+    def max_tokens(self) -> int:
+        return int(os.getenv("MAX_TOKENS", 800))
+
+    @property
+    def min_last_chunk(self) -> int:
+        return int(os.getenv("MIN_LAST_CHUNK", 200))
+
+    @property
     def ollama_base_url(self) -> str:
         return os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+
+    @property
+    def overlap_tokens(self) -> int:
+        return int(os.getenv("OVERLAP_TOKENS", 50))
+
+    @property
+    def tiktoken_model(self) -> str:
+        return os.getenv("TIKTOKEN_MODEL", "gpt2")
 
 
 @lru_cache()
