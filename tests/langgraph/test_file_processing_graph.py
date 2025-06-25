@@ -6,12 +6,14 @@ from rich.table import Table
 
 from app.langgraph.graphs.file_processing_graph import build_file_processing_graph
 from app.langgraph.state import FileProcessingState
+from tests.utils.test_parsers import ASSETS_DIR
 
 console = Console(force_terminal=True, color_system="truecolor")
 
 
 @pytest.mark.asyncio
 async def test_file_processing_graph_with_rich_output():
+    file_path = ASSETS_DIR / "example_pdf.pdf"
     console.line()
     console.print(
         Panel(
@@ -20,12 +22,14 @@ async def test_file_processing_graph_with_rich_output():
         )
     )
 
-    input_state: FileProcessingState = {"file_id": "test-file-123"}
+    input_state: FileProcessingState = {
+        "file_id": "test-file-123",
+        "file_path": file_path,
+    }
 
     graph = build_file_processing_graph()
 
-    # LangGraph's invoke is synchronous
-    result = graph.invoke(input_state)
+    result = await graph.ainvoke(input_state)
 
     table = Table(title="Processing Steps", show_lines=True)
     table.add_column("Step", style="bold green")

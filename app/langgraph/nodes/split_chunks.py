@@ -1,19 +1,17 @@
-from app.langgraph.state.file_processing_state import FileProcessingState
-from app.schemas.file_chunk import FileChunkBase
+from pathlib import Path
+from app.langgraph.state import FileProcessingState
+from app.services import ChunkSplitterService
+
+splitter = ChunkSplitterService()
 
 
 def split_chunks_node(state: FileProcessingState) -> FileProcessingState:
     print(f"[SplitChunks] Splitting chunks for file {state['file_id']}")
-    state["chunks"] = [
-        FileChunkBase(
-            content_type="application/text",
-            file_name=f"chunk-{i}",
-            content=f"Content of chunk {i}",
-            page_number=i,
-            chunk_index=i,
-            section=None,
-        )
-        for i in range(3)
-    ]
+    pages = state["pages"]
+
+    file_name = Path(state.get("file_path")).name
+    chunks = list(splitter.split(pages, file_name=file_name))
+    state["chunks"] = [chunk.content for chunk in chunks]
+    state["chunk_metadata"] = chunks  # Optional: retain metadata if needed
     state["step"] = "embed_chunks"
     return state

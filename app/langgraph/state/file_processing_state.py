@@ -9,7 +9,7 @@ class FileProcessingState(TypedDict, total=False):
     file_path: str
     parsed: bool
     chunks: List[FileChunkBase]
-    embeddings: List[PageText]
+    pages: List[PageText]
     concepts: List[str]
     saved: bool
     step: Literal[

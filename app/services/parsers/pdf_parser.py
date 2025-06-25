@@ -14,7 +14,6 @@ from app.schemas.file_chunk import PageText
 class PDFPlumberParser(FileParserProtocol):
     """Parses PDF files into chunks using pdfplumber with OCR fallback per page."""
 
-    @future_safe
     async def parse(self, file: BinaryIO) -> List[PageText]:
         return await asyncio.to_thread(self._parse_sync, file)
 
