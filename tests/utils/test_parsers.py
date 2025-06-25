@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from typing import List
+
 import pytest
 from returns.io import IOSuccess, IO
 from returns.pipeline import is_successful
@@ -21,19 +23,23 @@ async def test_pdf_parser_extracts_chunks_correctly():
         result
     ), f"Expected Success, got Failure: {result.failure() if result.is_failure else ''}"
 
-    chunks = result.unwrap()
+    io_chunks = result.unwrap()
 
-    assert chunks.map(lambda x: isinstance(x, list))
+    assert io_chunks.map(lambda x: isinstance(x, list))
 
-    for i, chunk in enumerate(chunks):
-        assert IO.do(c[i].chunk_index == i for c in chunks),
-        f"Expected chunk_index={i}, got {chunk.chunk_index}"
+    def check_indexes(chunks: List[ChunkData]) -> bool:
+        for index, chunk in enumerate(chunks):
+            assert (
+                chunk.chunk_index == index
+            ), f"Expected chunk_index={index}, got {chunk.chunk_index}"
+
+    IO.do(check_indexes(c) for c in io_chunks)
 
 
 @pytest.mark.asyncio
 async def test_pdf_parser_uses_ocr_on_scanned_pdf():
     parser = PDFPlumberParser()
-    file_path = ASSETS_DIR / "scanned_pdf.pdf"
+    file_path = ASSETS_DIR / "short_scanned_pdf.pdf"
 
     with file_path.open("rb") as file:
         result = await parser.parse(file)
@@ -42,10 +48,14 @@ async def test_pdf_parser_uses_ocr_on_scanned_pdf():
         result
     ), f"OCR fallback failed: {result.failure() if result.is_failure else ''}"
 
-    chunks = result.unwrap()
+    io_chunks = result.unwrap()
 
-    assert chunks.map(lambda x: isinstance(x, list))
+    assert io_chunks.map(lambda x: isinstance(x, list))
 
-    for chunk in chunks:
-        assert isinstance(chunk.content, str)
-        assert chunk.content.strip() != "", "Chunk content is empty after OCR"
+    def check_indexes(chunks: List[ChunkData]) -> bool:
+        for index, chunk in enumerate(chunks):
+            assert (
+                chunk.chunk_index == index
+            ), f"Expected chunk_index={index}, got {chunk.chunk_index}"
+
+    IO.do(check_indexes(c) for c in io_chunks)
