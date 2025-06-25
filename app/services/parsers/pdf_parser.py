@@ -4,11 +4,11 @@ from typing import BinaryIO, List
 
 import pdfplumber
 import pytesseract
-from returns.future import future_safe, FutureResult
+from returns.future import future_safe
 
-from app.protocols.parser import FileParserProtocol
-from app.schemas.file_chunk import ChunkData, PageText
 from app.errors import TextExtractionError
+from app.protocols.parser import FileParserProtocol
+from app.schemas.file_chunk import PageText
 
 
 class PDFPlumberParser(FileParserProtocol):

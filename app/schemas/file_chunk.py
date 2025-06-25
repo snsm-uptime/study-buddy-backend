@@ -1,36 +1,27 @@
 from datetime import datetime, timezone
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field
+
+from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt
 
 
-# Transient use in LangGraph pipeline
 class PageText(BaseModel):
     text: str
-    page_number: int
+    page_number: NonNegativeInt
 
 
-class ChunkData(BaseModel):
+class TransientChunk(BaseModel):
     content: str
-    chunk_index: int
-    section: str | None = None
-    page_number: int | None = None
+    chunk_index: NonNegativeInt
     start_time: float | None = None
     end_time: float | None = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-class FileChunkBase(BaseModel):
-    chunk_index: int
-    content_type: str | None = None
-    end_time: float | None = None
-    page_number: int | None = None
+class FileChunkBase(TransientChunk):
+    file_name: str
+    page_number: NonNegativeInt | None = None
     section: str | None = None
-    start_time: float | None = None
-    content: str
-
-
-class FileChunkCreate(FileChunkBase):
-    file_id: UUID
+    content_type: str | None = None
 
 
 class FileChunkRead(FileChunkBase):

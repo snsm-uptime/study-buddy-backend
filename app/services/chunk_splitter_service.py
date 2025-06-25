@@ -1,7 +1,10 @@
-import tiktoken
 from typing import Iterator, List
-from app.schemas.file_chunk import ChunkData, PageText
+
+import tiktoken
+from isort import file
+
 from app.config import get_settings
+from app.schemas.file_chunk import FileChunkBase, PageText
 
 
 class ChunkSplitterService:
@@ -17,7 +20,7 @@ class ChunkSplitterService:
         self.min_last_chunk = min_last_chunk
         self.overlap = overlap
 
-    def split(self, pages: List[PageText]) -> Iterator[ChunkData]:
+    def split(self, pages: List[PageText], file_name: str) -> Iterator[FileChunkBase]:
         token_buffer: list[int] = []
         page_map: list[int] = []
         chunk_index = 0
@@ -32,11 +35,12 @@ class ChunkSplitterService:
                 chunk_text = self.encoding.decode(chunk_tokens)
                 page_number = page_map[0]
 
-                yield ChunkData(
+                yield FileChunkBase(
                     content=chunk_text,
                     chunk_index=chunk_index,
                     page_number=page_number,
                     section=None,
+                    file_name=file_name,
                 )
                 chunk_index += 1
 
@@ -49,9 +53,10 @@ class ChunkSplitterService:
             chunk_text = self.encoding.decode(token_buffer)
             page_number = page_map[0]
 
-            yield ChunkData(
+            yield FileChunkBase(
                 content=chunk_text,
                 chunk_index=chunk_index,
                 page_number=page_number,
                 section=None,
+                file_name=file_name,
             )

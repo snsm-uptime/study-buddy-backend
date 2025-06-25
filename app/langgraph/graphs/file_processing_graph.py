@@ -1,16 +1,17 @@
+from langgraph.graph import END, StateGraph
+from langgraph.graph.state import CompiledStateGraph
+
 from app.langgraph.nodes import (
-    parse_file_node,
-    split_chunks_node,
     embed_chunks_node,
     extract_concepts_node,
+    parse_file_node,
     persist_to_db_node,
+    split_chunks_node,
 )
-from langgraph.graph import StateGraph, END
-
 from app.langgraph.state import FileProcessingState
 
 
-def build_file_processing_graph() -> StateGraph:
+def build_file_processing_graph() -> CompiledStateGraph:
     builder = StateGraph(FileProcessingState)
 
     builder.add_node("parse_file", parse_file_node)
@@ -27,4 +28,4 @@ def build_file_processing_graph() -> StateGraph:
     builder.add_edge("extract_concepts", "persist_to_db")
     builder.add_edge("persist_to_db", END)
 
-    return builder
+    return builder.compile()

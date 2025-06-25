@@ -1,17 +1,13 @@
-from multiprocessing import Value
 from typing import Sequence
 from uuid import UUID
 
 from returns.future import future_safe
-from returns.io import IOFailure, IOResult, IOSuccess
-from returns.result import Failure, Success
+from returns.io import IOSuccess
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.file import File
 from app.db.models.file_chunk import FileChunk
 from app.errors import FileNotFoundError
-from app.schemas.file_chunk import FileChunkCreate
 
 
 class FileChunkRepository:

@@ -1,7 +1,7 @@
 import pytest
 
-from app.services.chunk_splitter_service import ChunkSplitterService
 from app.schemas.file_chunk import PageText
+from app.services.chunk_splitter_service import ChunkSplitterService
 
 
 @pytest.mark.asyncio
@@ -11,7 +11,7 @@ async def test_chunk_splitter_merges_small_final_chunk():
         PageText(page_number=0, text="token " * 800 + "tail " * 20),
     ]
     splitter = ChunkSplitterService(max_tokens=800, min_last_chunk=50, overlap=0)
-    chunks = list(splitter.split(pages))
+    chunks = list(splitter.split(pages, file_name="test_file"))
 
     assert len(chunks) == 1
     assert "tail" in chunks[0].content
@@ -23,7 +23,7 @@ async def test_chunk_splitter_emits_final_chunk_when_large_enough():
         PageText(page_number=0, text="token " * 800 + "tail " * 80),
     ]
     splitter = ChunkSplitterService(max_tokens=800, min_last_chunk=50, overlap=0)
-    chunks = list(splitter.split(pages))
+    chunks = list(splitter.split(pages, file_name="test_file"))
 
     assert len(chunks) == 2
     assert "tail" in chunks[1].content
@@ -35,7 +35,7 @@ async def test_chunk_splitter_respects_overlap_tokens():
     pages = [PageText(page_number=0, text=text)]
 
     splitter = ChunkSplitterService(max_tokens=600, min_last_chunk=100, overlap=100)
-    chunks = list(splitter.split(pages))
+    chunks = list(splitter.split(pages, file_name="test_file"))
 
     assert len(chunks) >= 2
     first_end = splitter.encoding.encode(chunks[0].content)[-100:]
@@ -52,7 +52,7 @@ async def test_chunk_splitter_handles_multiple_pages():
         PageText(page_number=2, text="page three " * 300),
     ]
     splitter = ChunkSplitterService(max_tokens=600, min_last_chunk=50, overlap=50)
-    chunks = list(splitter.split(pages))
+    chunks = list(splitter.split(pages, file_name="test_file"))
 
     text_combined = " ".join(chunk.content for chunk in chunks)
     assert "page one" in text_combined

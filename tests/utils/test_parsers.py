@@ -1,13 +1,12 @@
 from pathlib import Path
-
 from typing import List
 
 import pytest
-from returns.io import IOSuccess, IO
+from returns.io import IO, IOSuccess
 from returns.pipeline import is_successful
 
+from app.schemas.file_chunk import FileChunkBase
 from app.services.parsers import PDFPlumberParser
-from app.schemas.file_chunk import ChunkData
 
 ASSETS_DIR = Path("tests") / "assets"
 
@@ -23,17 +22,17 @@ async def test_pdf_parser_extracts_chunks_correctly():
         result
     ), f"Expected Success, got Failure: {result.failure() if result.is_failure else ''}"
 
-    io_chunks = result.unwrap()
+    io_page_texts = result.unwrap()
 
-    assert io_chunks.map(lambda x: isinstance(x, list))
+    assert io_page_texts.map(lambda x: isinstance(x, list))
 
-    def check_indexes(chunks: List[ChunkData]) -> bool:
-        for index, chunk in enumerate(chunks):
+    def page_numbers(pages: List[FileChunkBase]) -> bool:
+        for index, page in enumerate(pages):
             assert (
-                chunk.chunk_index == index
-            ), f"Expected chunk_index={index}, got {chunk.chunk_index}"
+                page.page_number == index
+            ), f"Expected page_number={index}, got {page.page_number}"
 
-    IO.do(check_indexes(c) for c in io_chunks)
+    IO.do(page_numbers(c) for c in io_page_texts)
 
 
 @pytest.mark.asyncio
@@ -48,14 +47,14 @@ async def test_pdf_parser_uses_ocr_on_scanned_pdf():
         result
     ), f"OCR fallback failed: {result.failure() if result.is_failure else ''}"
 
-    io_chunks = result.unwrap()
+    io_page_texts = result.unwrap()
 
-    assert io_chunks.map(lambda x: isinstance(x, list))
+    assert io_page_texts.map(lambda x: isinstance(x, list))
 
-    def check_indexes(chunks: List[ChunkData]) -> bool:
-        for index, chunk in enumerate(chunks):
+    def page_numbers(pages: List[FileChunkBase]) -> bool:
+        for index, page in enumerate(pages):
             assert (
-                chunk.chunk_index == index
-            ), f"Expected chunk_index={index}, got {chunk.chunk_index}"
+                page.page_number == index
+            ), f"Expected page_number={index}, got {page.page_number}"
 
-    IO.do(check_indexes(c) for c in io_chunks)
+    IO.do(page_numbers(c) for c in io_page_texts)

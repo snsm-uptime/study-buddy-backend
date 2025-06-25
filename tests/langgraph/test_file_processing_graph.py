@@ -1,4 +1,5 @@
 import pytest
+from langgraph.graph import StateGraph
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -6,11 +7,12 @@ from rich.table import Table
 from app.langgraph.graphs.file_processing_graph import build_file_processing_graph
 from app.langgraph.state import FileProcessingState
 
-console = Console()
+console = Console(force_terminal=True, color_system="truecolor")
 
 
 @pytest.mark.asyncio
 async def test_file_processing_graph_with_rich_output():
+    console.line()
     console.print(
         Panel(
             "[bold cyan]LangGraph Test: File Processing Pipeline[/bold cyan]",
