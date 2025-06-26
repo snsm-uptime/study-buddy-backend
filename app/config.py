@@ -46,6 +46,14 @@ class Settings:
     def tiktoken_model(self) -> str:
         return os.getenv("TIKTOKEN_MODEL", "gpt2")
 
+    @property
+    def chroma_persist_directory(self) -> str:
+        return os.getenv("CHROMA_PERSIST_DIRECTORY", "./chroma_db")
+
+    @property
+    def chroma_collection_name(self) -> str:
+        return os.getenv("CHROMA_COLLECTION_NAME", "ctx_collection")
+
 
 @lru_cache()
 def get_settings() -> Settings:

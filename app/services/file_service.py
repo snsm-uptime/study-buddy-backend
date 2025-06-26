@@ -1,6 +1,8 @@
 from math import e
 from uuid import UUID
 
+from app.langgraph.state.file_processing_state import FileProcessingState
+from app.services.file_chunk_service import FileChunkService
 from returns.io import IOFailure, IOResult, IOSuccess
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,11 +21,22 @@ class FileService:
         self,
         session: AsyncSession,
         file_repository: FileRepository,
-        file_chunk_repository: FileChunkRepository,
+        file_chunk_service: FileChunkService,
     ):
         self.session = session
-        self.file_chunk_repository = file_chunk_repository
+        self.file_chunk_service = file_chunk_service
         self.file_repository = file_repository
+
+    async def check_file_exists(
+        self, user_id: UUID, filename: str, size_bytes: float
+    ) -> bool:
+        # Validate if file exists in database
+        existing_result = await self.file_repository.get_by_user_and_title_size(
+            user_id=user_id,
+            title=filename,
+            size_bytes=size_bytes,
+        )
+        return isinstance(existing_result, IOFailure)
 
     async def upload_and_process_file(
         self,
@@ -34,24 +47,9 @@ class FileService:
         author: str = "",
         source: str = "file",
     ) -> IOResult[FileRead, FormValidationError]:
-        # Parse + chunk
-        # chunks = process_file(content, filename)
-        decoded_text = content.decode("utf-8")  # support only utf-8 for now
-        chunks = split_text_into_chunks(decoded_text, chunk_size=500)
-
-        # Persist file and chunks in the same transaction
+        decoded_text = content.decode("utf-8")
         async with self.session.begin():
-            existing_result = await self.file_repository.get_by_user_and_title_size(
-                user_id=user_id,
-                title=filename,
-                size_bytes=size_bytes,
-            )
-            if not isinstance(existing_result, IOFailure):
-                return IOFailure(
-                    FormValidationError(
-                        field="file", message="This file has already been uploaded."
-                    )
-                )
+            # Create file entry in the database
             file_create_response = await self.file_repository.create(
                 user_id=user_id,
                 title=filename,
@@ -62,26 +60,26 @@ class FileService:
             match file_create_response:
                 case IOSuccess(file_data):
                     file: File = file_data.unwrap()
-                    file_chunks = [
-                        FileChunk(
-                            file_id=file.id,
-                            chunk_index=index,
-                            section=None,
-                            text=chunk,
-                        )
-                        for index, chunk in enumerate(chunks)
-                    ]
-                    res = await self.file_chunk_repository.create_many(file_chunks)
-                    match res:
-                        case IOSuccess(_):
-                            return IOSuccess(FileRead.model_validate(file))
-                        case _:
-                            return IOFailure(
-                                FormValidationError(
-                                    field="file_chunks",
-                                    message="Failed to persist file chunks",
-                                )
-                            )
+                    # file_chunks = [
+                    #     FileChunk(
+                    #         file_id=file.id,
+                    #         chunk_index=index,
+                    #         section=None,
+                    #         text=chunk,
+                    #     )
+                    #     for index, chunk in enumerate(chunks)
+                    # ]
+                    # res = await self.file_chunk_repository.create_many(file_chunks)
+                    # match res:
+                    #     case IOSuccess(_):
+                    #         return IOSuccess(FileRead.model_validate(file))
+                    #     case _:
+                    #         return IOFailure(
+                    #             FormValidationError(
+                    #                 field="file_chunks",
+                    #                 message="Failed to persist file chunks",
+                    #             )
+                    #         )
                 case IOFailure(exception):
                     err = exception.failure()
                     failure: FormValidationError

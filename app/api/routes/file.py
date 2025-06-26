@@ -1,6 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
+from app.langgraph.state.file_processing_state import FileProcessingState
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from returns.io import IOFailure, IOResult, IOSuccess
 
@@ -21,9 +22,10 @@ async def upload_file(
     user_id: UUID = Form(...),
 ) -> FileRead:
     content = await upload.read()
-    result = await service.upload_and_process_file(
+    result = FileProcessingState(
         author=author,
         content=content,
+        content_type=upload.content_type,
         filename=upload.filename if upload.filename else "Unknown",
         size_bytes=upload.size if upload.size else len(content),
         source=source,

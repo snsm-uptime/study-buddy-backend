@@ -3,9 +3,10 @@ from collections.abc import AsyncGenerator, Generator
 from typing import AsyncIterator
 from unittest.mock import AsyncMock
 
+from app.dependencies.file import get_file_service
 import pytest
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
+from httpx import ASGITransport, AsyncClient, get
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -56,6 +57,15 @@ async def client(db_session: AsyncSession) -> AsyncIterator[AsyncClient]:
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def mock_file_service(client: AsyncClient) -> Generator[AsyncMock, None, None]:
+    return get_file_service(client)
+    # mock = AsyncMock()
+    # app.dependency_overrides[get_file_service] = lambda: mock
+    # yield mock
+    # app.dependency_overrides.clear()
 
 
 @pytest.fixture

@@ -19,8 +19,7 @@ class PDFPlumberParser(FileParserProtocol):
 
     def _parse_sync(self, file: BinaryIO) -> List[PageText]:
         try:
-            file_bytes = file.read()
-            with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+            with pdfplumber.open(file) as pdf:
                 pages = []
                 for i, page in enumerate(pdf.pages):
                     text = page.extract_text()
