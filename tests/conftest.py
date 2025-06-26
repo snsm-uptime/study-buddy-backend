@@ -3,7 +3,6 @@ from collections.abc import AsyncGenerator, Generator
 from typing import AsyncIterator
 from unittest.mock import AsyncMock
 
-from app.dependencies.file import get_file_service
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient, get
@@ -17,6 +16,7 @@ from sqlalchemy.pool import NullPool
 from app.config import get_settings
 from app.db.base import Base
 from app.dependencies.database import get_db_session
+from app.dependencies.file import get_file_service
 from app.dependencies.user import get_user_service
 from app.main import app
 
@@ -60,16 +60,15 @@ async def client(db_session: AsyncSession) -> AsyncIterator[AsyncClient]:
 
 
 @pytest_asyncio.fixture
-async def mock_file_service(client: AsyncClient) -> Generator[AsyncMock, None, None]:
-    return get_file_service(client)
-    # mock = AsyncMock()
-    # app.dependency_overrides[get_file_service] = lambda: mock
-    # yield mock
-    # app.dependency_overrides.clear()
+async def mock_file_service() -> AsyncGenerator[AsyncMock, None, None]:
+    mock = AsyncMock()
+    app.dependency_overrides[get_file_service] = lambda: mock
+    yield mock
+    app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def mock_user_service() -> Generator[AsyncMock, None, None]:
+@pytest_asyncio.fixture
+def mock_user_service() -> AsyncGenerator[AsyncMock, None, None]:
     mock = AsyncMock()
     app.dependency_overrides[get_user_service] = lambda: mock
     yield mock

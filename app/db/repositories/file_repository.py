@@ -22,14 +22,14 @@ class FileRepository:
         title: str,
         size_bytes: float,
         author: str = "",
-        source: str = "",
+        content_type: str = "",
     ) -> File:
         file = File(
             user_id=user_id,
             title=title,
             size_bytes=size_bytes,
             author=author,
-            source=source,
+            source=content_type,
         )
         self.session.add(file)
         await self.session.flush()

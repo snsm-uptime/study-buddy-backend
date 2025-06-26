@@ -12,7 +12,7 @@ class FileProcessingState(TypedDict, total=False):
     embeddings: List[str]
     file_buffer: BinaryIO
     file_id: str
-    file_name: str
+    title: str
     pages: List[PageText]
     parsed: bool
     saved: bool

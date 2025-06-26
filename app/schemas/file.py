@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict
 class FileBase(BaseModel):
     author: str
     size_bytes: float
-    source: str
+    content_type: str
     title: str
 
 

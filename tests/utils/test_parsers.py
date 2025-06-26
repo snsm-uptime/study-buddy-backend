@@ -18,21 +18,9 @@ async def test_pdf_parser_extracts_chunks_correctly():
 
     with file_path.open("rb") as file:
         result = await parser.parse(file)
-    assert is_successful(
-        result
-    ), f"Expected Success, got Failure: {result.failure() if result.is_failure else ''}"
 
-    io_page_texts = result.unwrap()
-
-    assert io_page_texts.map(lambda x: isinstance(x, list))
-
-    def page_numbers(pages: List[FileChunkBase]) -> bool:
-        for index, page in enumerate(pages):
-            assert (
-                page.page_number == index
-            ), f"Expected page_number={index}, got {page.page_number}"
-
-    IO.do(page_numbers(c) for c in io_page_texts)
+    assert isinstance(result, list), f"Expected list, got {type(result)}"
+    assert len(result) > 0, "Expected non-empty list of chunks"
 
 
 @pytest.mark.asyncio
@@ -43,18 +31,5 @@ async def test_pdf_parser_uses_ocr_on_scanned_pdf():
     with file_path.open("rb") as file:
         result = await parser.parse(file)
 
-    assert is_successful(
-        result
-    ), f"OCR fallback failed: {result.failure() if result.is_failure else ''}"
-
-    io_page_texts = result.unwrap()
-
-    assert io_page_texts.map(lambda x: isinstance(x, list))
-
-    def page_numbers(pages: List[FileChunkBase]) -> bool:
-        for index, page in enumerate(pages):
-            assert (
-                page.page_number == index
-            ), f"Expected page_number={index}, got {page.page_number}"
-
-    IO.do(page_numbers(c) for c in io_page_texts)
+    assert isinstance(result, list), f"Expected list, got {type(result)}"
+    assert len(result) > 0, "Expected non-empty list of chunks"

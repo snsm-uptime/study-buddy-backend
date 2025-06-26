@@ -1,8 +1,6 @@
 from math import e
 from uuid import UUID
 
-from app.langgraph.state.file_processing_state import FileProcessingState
-from app.services.file_chunk_service import FileChunkService
 from returns.io import IOFailure, IOResult, IOSuccess
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +10,9 @@ from app.db.models.file_chunk import FileChunk
 from app.db.repositories.file_chunk_repository import FileChunkRepository
 from app.db.repositories.file_repository import FileRepository
 from app.errors import FileNotFoundError, FormValidationError
+from app.langgraph.state.file_processing_state import FileProcessingState
 from app.schemas.file import FileCreate, FileRead
+from app.services.file_chunk_service import FileChunkService
 from app.utils.text import split_text_into_chunks
 
 
@@ -29,14 +29,39 @@ class FileService:
 
     async def check_file_exists(
         self, user_id: UUID, filename: str, size_bytes: float
-    ) -> bool:
+    ) -> FileRead | None:
         # Validate if file exists in database
         existing_result = await self.file_repository.get_by_user_and_title_size(
             user_id=user_id,
             title=filename,
             size_bytes=size_bytes,
         )
-        return isinstance(existing_result, IOFailure)
+        return existing_result.value_or(None)
+
+    async def create_file_if_not_exists(
+        self, file_data: FileCreate
+    ) -> IOResult[FileRead, FormValidationError]:
+        file_in_db: FileRead | None = await self.check_file_exists(
+            user_id=file_data.user_id,
+            filename=file_data.title,
+            size_bytes=file_data.size_bytes,
+        )
+        if file_in_db is None:
+            file_create_response: IOResult[
+                File, Exception
+            ] = await self.file_repository.create(**file_data)
+            match file_create_response:
+                case IOSuccess(value):
+                    return IOSuccess(FileRead.model_validate(value.unwrap()))
+                case _:
+                    return IOFailure(
+                        FormValidationError(
+                            field="file",
+                            message=f"Failed to create file: {file_data.title}",
+                        )
+                    )
+        else:
+            return IOSuccess(file_in_db)
 
     async def upload_and_process_file(
         self,

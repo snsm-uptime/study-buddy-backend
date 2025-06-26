@@ -26,7 +26,7 @@ class File(Base, TimestampMixin, SoftDeletableMixin):
     )
     title: Mapped[str] = mapped_column(String, nullable=False)
     author: Mapped[str | None] = mapped_column(String, nullable=True)
-    source: Mapped[str | None] = mapped_column(Text, nullable=True)
+    content_type: Mapped[str | None] = mapped_column(Text, nullable=True)
     size_bytes: Mapped[float] = mapped_column(Float, nullable=False)
 
     # Bi-directional relationship
