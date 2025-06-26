@@ -68,7 +68,7 @@ async def mock_file_service() -> AsyncGenerator[AsyncMock, None, None]:
 
 
 @pytest_asyncio.fixture
-def mock_user_service() -> AsyncGenerator[AsyncMock, None, None]:
+async def mock_user_service() -> AsyncGenerator[AsyncMock, None, None]:
     mock = AsyncMock()
     app.dependency_overrides[get_user_service] = lambda: mock
     yield mock
