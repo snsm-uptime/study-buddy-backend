@@ -19,11 +19,9 @@ from app.utils.text import split_text_into_chunks
 class FileService:
     def __init__(
         self,
-        session: AsyncSession,
         file_repository: FileRepository,
         file_chunk_service: FileChunkService,
     ):
-        self.session = session
         self.file_chunk_service = file_chunk_service
         self.file_repository = file_repository
 
@@ -36,7 +34,12 @@ class FileService:
             title=filename,
             size_bytes=size_bytes,
         )
-        return existing_result.value_or(None)
+        match existing_result:
+            case IOSuccess(value):
+                # If file exists, return the FileRead model
+                return FileRead.model_validate(value.unwrap(), from_attributes=True)
+            case _:
+                return None
 
     async def create_file_if_not_exists(
         self, file_data: FileCreate
@@ -47,9 +50,9 @@ class FileService:
             size_bytes=file_data.size_bytes,
         )
         if file_in_db is None:
-            file_create_response: IOResult[
-                File, Exception
-            ] = await self.file_repository.create(**file_data)
+            file_create_response: IOResult[File, Exception] = (
+                await self.file_repository.create(**file_data.model_dump())
+            )
             match file_create_response:
                 case IOSuccess(value):
                     return IOSuccess(FileRead.model_validate(value.unwrap()))
@@ -61,7 +64,7 @@ class FileService:
                         )
                     )
         else:
-            return IOSuccess(file_in_db)
+            return IOSuccess(FileRead.model_validate(file_in_db.unwrap()))
 
     async def upload_and_process_file(
         self,

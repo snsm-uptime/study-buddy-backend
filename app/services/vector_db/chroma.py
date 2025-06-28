@@ -1,15 +1,16 @@
-from app.protocols.embedding import EmbeddingService
+from typing import List
+from returns.io import IOResult
+from app.protocols.embedding import EmbeddingServiceProtocol
 from chromadb import Client, Collection
 from chromadb.config import Settings
 from app.schemas.file_chunk import FileChunkRead
-from app.protocols.vector_db import VectorDBService
-from app.utils import console
+from app.protocols.vector_db import VectorDBServiceProtocol
 from app.config import get_settings
 
 settings = get_settings()
 
 
-class ChromaDBService(VectorDBService):
+class ChromaDBService(VectorDBServiceProtocol):
     def __init__(self):
         self.__settings = Settings(
             persist_directory=settings.chroma_persist_directory,
@@ -25,8 +26,8 @@ class ChromaDBService(VectorDBService):
         return self.__collection
 
     async def upsert_chunks(
-        self, chunks: list[FileChunkRead], embedding_service: EmbeddingService
-    ) -> None:
+        self, chunks: list[FileChunkRead], embedding_service: EmbeddingServiceProtocol
+    ) -> IOResult[List[List[float]], Exception]:
         documents = []
         metadatas = []
         ids = []
@@ -35,9 +36,6 @@ class ChromaDBService(VectorDBService):
         for chunk in chunks:
             embedding = embedding_service.embed(chunk)
             if embedding is None:
-                console.print(
-                    f"[yellow]Skipping chunk {chunk.chunk_index} — no embedding[/yellow]"
-                )
                 continue
 
             documents.append(chunk.text)
@@ -52,3 +50,4 @@ class ChromaDBService(VectorDBService):
                 metadatas=metadatas,
                 ids=ids,
             )
+            return IOResult.success(embeddings)
