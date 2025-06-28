@@ -14,7 +14,7 @@ async def test_chunk_splitter_merges_small_final_chunk():
     chunks = list(splitter.split(pages, file_name="test_file"))
 
     assert len(chunks) == 1
-    assert "tail" in chunks[0].content
+    assert "tail" in chunks[0].text
 
 
 @pytest.mark.asyncio
@@ -26,7 +26,7 @@ async def test_chunk_splitter_emits_final_chunk_when_large_enough():
     chunks = list(splitter.split(pages, file_name="test_file"))
 
     assert len(chunks) == 2
-    assert "tail" in chunks[1].content
+    assert "tail" in chunks[1].text
 
 
 @pytest.mark.asyncio
@@ -38,8 +38,8 @@ async def test_chunk_splitter_respects_overlap_tokens():
     chunks = list(splitter.split(pages, file_name="test_file"))
 
     assert len(chunks) >= 2
-    first_end = splitter.encoding.encode(chunks[0].content)[-100:]
-    second_start = splitter.encoding.encode(chunks[1].content)[:100]
+    first_end = splitter.encoding.encode(chunks[0].text)[-100:]
+    second_start = splitter.encoding.encode(chunks[1].text)[:100]
 
     assert first_end == second_start, "Overlap between chunks did not match"
 
@@ -54,7 +54,7 @@ async def test_chunk_splitter_handles_multiple_pages():
     splitter = ChunkSplitterService(max_tokens=600, min_last_chunk=50, overlap=50)
     chunks = list(splitter.split(pages, file_name="test_file"))
 
-    text_combined = " ".join(chunk.content for chunk in chunks)
+    text_combined = " ".join(chunk.text for chunk in chunks)
     assert "page one" in text_combined
     assert "page two" in text_combined
     assert "page three" in text_combined

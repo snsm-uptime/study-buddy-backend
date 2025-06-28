@@ -1,4 +1,8 @@
 import uuid
+from app.services.embedding.sentence_transformer import (
+    SentenceTransformerEmbeddingService,
+)
+from returns.io import IOResult
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock
@@ -19,7 +23,7 @@ from tests.utils.test_parsers import ASSETS_DIR
 console = Console(force_terminal=True, color_system="truecolor")
 
 
-@pytest.mark.skip("Skipping file graph test")
+# @pytest.mark.skip("Skipping file graph test")
 @pytest.mark.asyncio
 async def test_file_processing_graph_with_rich_output(mock_file_service: AsyncMock):
     mock_file = FileCreate(
@@ -29,11 +33,13 @@ async def test_file_processing_graph_with_rich_output(mock_file_service: AsyncMo
         size_bytes=777,
         user_id=uuid.uuid1(),
     )
-    mock_file_service.create_file_if_not_exists.return_value = FileRead(
-        **mock_file.model_dump(),
-        id=uuid.uuid1(),
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+    mock_file_service.create_file_if_not_exists.return_value = IOResult.from_value(
+        FileRead(
+            **mock_file.model_dump(),
+            id=uuid.uuid1(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
     )
 
     file_path = ASSETS_DIR / "example_pdf.pdf"
@@ -56,6 +62,7 @@ async def test_file_processing_graph_with_rich_output(mock_file_service: AsyncMo
             chunk_splitter_service=get_chunk_splitter_service(),
             file_service=mock_file_service,
             pdf_parser=PDFPlumberParser(),
+            embedding_service=SentenceTransformerEmbeddingService(),
         )
 
         result = await graph.ainvoke(input_state)
