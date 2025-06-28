@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Iterable, List
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt
@@ -10,16 +11,15 @@ class PageText(BaseModel):
 
 
 class TransientChunk(BaseModel):
-    content: str
+    text: str
     chunk_index: NonNegativeInt
     start_time: float | None = None
     end_time: float | None = None
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class FileChunkBase(TransientChunk):
     file_name: str
-    page_number: NonNegativeInt | None = None
+    page_numbers: Iterable[NonNegativeInt] | None = None
     section: str | None = None
     content_type: str | None = None
 

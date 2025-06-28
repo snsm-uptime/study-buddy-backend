@@ -1,8 +1,7 @@
 import uuid
-from sqlite3 import Time
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer, Text
+from sqlalchemy import ForeignKey, Integer, Text, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -25,11 +24,14 @@ class FileChunk(Base, SoftDeletableMixin, TimestampMixin):
     )
 
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
-    content_type: Mapped[str | None] = mapped_column(Text, nullable=True)
-    end_time: Mapped[float | None] = mapped_column(nullable=True)
-    page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    section: Mapped[str] = mapped_column(Text, nullable=True)
-    start_time: Mapped[float | None] = mapped_column(nullable=True)
+
     text: Mapped[str] = mapped_column(Text, nullable=False)
+    content_type: Mapped[str | None] = mapped_column(Text, nullable=True)
+    page_numbers: Mapped[list[int] | None] = mapped_column(
+        ARRAY(Integer), nullable=True
+    )
+    sections: Mapped[list[str] | None] = mapped_column(ARRAY(Text), nullable=True)
+    start_time: Mapped[float | None] = mapped_column(nullable=True)
+    end_time: Mapped[float | None] = mapped_column(nullable=True)
 
     file: Mapped["File"] = relationship(back_populates="chunks")
