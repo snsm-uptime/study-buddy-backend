@@ -1,39 +1,54 @@
-from typing import Any, List, Mapping
-
-import chromadb
-from chromadb.api import ClientAPI
+from app.protocols.embedding import EmbeddingService
+from chromadb import Client, Collection
 from chromadb.config import Settings
-
+from app.schemas.file_chunk import FileChunkRead
 from app.protocols.vector_db import VectorDBService
+from app.utils import console
 from app.config import get_settings
 
+settings = get_settings()
 
-class ChromaDBVectorService(VectorDBService):
+
+class ChromaDBService(VectorDBService):
     def __init__(self):
-        app_settings = get_settings()
-        self.client: ClientAPI = chromadb.Client(
-            Settings(persist_directory=app_settings.chroma_persist_directory)
+        self.__settings = Settings(
+            persist_directory=settings.chroma_persist_directory,
+            is_persistent=True,
         )
-        self.collection = self.client.get_or_create_collection(
-            name=app_settings.chroma_collection_name
+        self.__client = Client(self.__settings)
+        self.__collection = self.__client.get_or_create_collection(
+            settings.chroma_collection_name
         )
 
-    def get_embedding(self, text: str) -> List[float] | None:
-        # Replace with your actual embedding logic or model call
-        from app.services.embedding import embed_text
+    @property
+    def collection(self) -> Collection:
+        return self.__collection
 
-        return embed_text(text)
-
-    def add_embedding(
-        self,
-        vector_id: str,
-        embedding: List[float],
-        document: str,
-        metadata: Mapping[str, Any],
+    async def upsert_chunks(
+        self, chunks: list[FileChunkRead], embedding_service: EmbeddingService
     ) -> None:
-        self.collection.add(
-            ids=[vector_id],
-            embeddings=[embedding],
-            documents=[document],
-            metadatas=[metadata],
-        )
+        documents = []
+        metadatas = []
+        ids = []
+        embeddings = []
+
+        for chunk in chunks:
+            embedding = embedding_service.embed(chunk)
+            if embedding is None:
+                console.print(
+                    f"[yellow]Skipping chunk {chunk.chunk_index} — no embedding[/yellow]"
+                )
+                continue
+
+            documents.append(chunk.text)
+            embeddings.append(embedding)
+            ids.append(chunk.id)
+            metadatas.append(chunk.model_dump(exclude={"text"}))
+
+        if documents:
+            self.collection.add(
+                documents=documents,
+                embeddings=embeddings,
+                metadatas=metadatas,
+                ids=ids,
+            )

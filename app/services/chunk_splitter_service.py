@@ -1,7 +1,6 @@
 from typing import Iterator, List
 
 import tiktoken
-from isort import file
 
 from app.config import get_settings
 from app.schemas.file_chunk import FileChunkBase, PageText
@@ -28,17 +27,19 @@ class ChunkSplitterService:
         for page in pages:
             page_tokens = self.encoding.encode(page.text)
             token_buffer.extend(page_tokens)
+            # list of page numbers corresponding to the tokens in the buffer
             page_map.extend([page.page_number] * len(page_tokens))
-
             while len(token_buffer) >= self.max_tokens + self.min_last_chunk:
                 chunk_tokens = token_buffer[: self.max_tokens]
+                # Here the tokens are sliced to the max_tokens limit
+                # They are then parsed to text again
                 chunk_text = self.encoding.decode(chunk_tokens)
-                page_number = page_map[0]
+                page_numbers = set(page_map[: self.max_tokens])
 
                 yield FileChunkBase(
-                    content=chunk_text,
+                    text=chunk_text,
                     chunk_index=chunk_index,
-                    page_number=page_number,
+                    page_numbers=page_numbers,
                     section=None,
                     file_name=file_name,
                 )
@@ -48,15 +49,14 @@ class ChunkSplitterService:
                 token_buffer = token_buffer[self.max_tokens - self.overlap :]
                 page_map = page_map[self.max_tokens - self.overlap :]
 
-        # Final chunk — merge remaining into one
         if token_buffer:
             chunk_text = self.encoding.decode(token_buffer)
-            page_number = page_map[0]
+            page_numbers = sorted(set(page_map))
 
             yield FileChunkBase(
-                content=chunk_text,
+                text=chunk_text,
                 chunk_index=chunk_index,
-                page_number=page_number,
+                page_numbers=page_numbers,
                 section=None,
                 file_name=file_name,
             )

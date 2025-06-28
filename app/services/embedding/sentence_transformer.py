@@ -9,3 +9,6 @@ class SentenceTransformerEmbeddingService(EmbeddingService):
 
     def embed(self, text: str) -> List[float] | None:
         return self.model.encode(text, convert_to_numpy=True).tolist()
+
+    def embed_many(self, texts: List[str]) -> List[List[float]]:
+        return [self.model.encode(t, convert_to_numpy=True).tolist() for t in texts]

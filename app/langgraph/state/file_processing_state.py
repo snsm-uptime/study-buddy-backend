@@ -1,12 +1,12 @@
 from typing import Any, BinaryIO, List, Literal, TypedDict
 from uuid import UUID
 
-from app.schemas.file_chunk import PageText
+from app.schemas.file_chunk import FileChunkRead, PageText
 
 
 class FileProcessingState(TypedDict, total=False):
     author: str
-    chunks: List[str]
+    chunks: List[FileChunkRead]
     concepts: List[str]
     content_type: str
     embeddings: List[str]

@@ -1,4 +1,5 @@
 from returns.future import FutureResult
+from returns.io import IOSuccess, IOFailure
 
 from app.errors import TextExtractionError
 from app.langgraph.state import FileProcessingState
@@ -38,6 +39,17 @@ def build_parse_file_node(
                 )
             )
             result = await parser.parse(state["file_buffer"])
+            match file_response:
+                case IOSuccess(value):
+                    state["file_id"] = value.unwrap().id
+                case IOFailure(error):
+                    raise TextExtractionError(
+                        f"Failed to create file in database: {error.message}"
+                    )
+                case _:
+                    raise TextExtractionError(
+                        "Unexpected error while creating file in database"
+                    )
 
             if not isinstance(result, list):
                 raise TextExtractionError(str(result.failure()))
