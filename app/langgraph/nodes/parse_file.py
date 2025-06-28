@@ -38,10 +38,9 @@ def build_parse_file_node(
                     user_id=state["user_id"],
                 )
             )
-            result = await parser.parse(state["file_buffer"])
             match file_response:
                 case IOSuccess(value):
-                    state["file_id"] = value.unwrap().id
+                    state["file"] = value.unwrap()
                 case IOFailure(error):
                     raise TextExtractionError(
                         f"Failed to create file in database: {error.message}"
@@ -51,6 +50,8 @@ def build_parse_file_node(
                         "Unexpected error while creating file in database"
                     )
 
+            result = await parser.parse(state["file_buffer"])
+            state.pop("file_buffer", None)
             if not isinstance(result, list):
                 raise TextExtractionError(str(result.failure()))
 
@@ -60,7 +61,6 @@ def build_parse_file_node(
             return state
 
         except Exception as e:
-            # print(f"[ParseFile] Extraction failed for {file_id}: {e}")
             state["step"] = "done"
             raise
 

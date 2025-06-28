@@ -1,16 +1,19 @@
 from app.langgraph.state.file_processing_state import FileProcessingState
-from app.protocols.embedding import EmbeddingService
-from app.protocols.vector_db import VectorDBService
+from app.protocols.embedding import EmbeddingServiceProtocol
+from app.protocols.vector_db import VectorDBServiceProtocol
 from app.schemas.file_chunk import PageText
 from app.services.chunk_splitter_service import ChunkSplitterService
 
 
 def build_embed_chunks_node(
-    embedding_service: EmbeddingService, vector_db: VectorDBService
+    embedding_service: EmbeddingServiceProtocol,
+    vector_db_service: VectorDBServiceProtocol,
 ):
-    def embed_chunks_node(state: FileProcessingState) -> FileProcessingState:
+    async def embed_chunks_node(state: FileProcessingState) -> FileProcessingState:
         chunks = state["chunks"]
-        vector_db.upsert_chunks(chunks, embedding_service)
+        state["embeddings"] = await vector_db_service.upsert_chunks(
+            chunks, embedding_service
+        )
         return state
 
     return embed_chunks_node

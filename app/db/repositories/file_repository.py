@@ -29,11 +29,12 @@ class FileRepository:
             title=title,
             size_bytes=size_bytes,
             author=author,
-            source=content_type,
+            content_type=content_type,
         )
         self.session.add(file)
         await self.session.flush()
         await self.session.refresh(file)
+        await self.session.commit()
         return file
 
     @future_safe

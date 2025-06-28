@@ -11,7 +11,7 @@ class FileProcessingState(TypedDict, total=False):
     content_type: str
     embeddings: List[str]
     file_buffer: BinaryIO
-    file_id: str
+    file: FileChunkRead
     title: str
     pages: List[PageText]
     parsed: bool

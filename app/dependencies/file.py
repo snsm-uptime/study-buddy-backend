@@ -8,9 +8,16 @@ from app.dependencies.database import get_db_session
 from app.services import FileChunkService, FileService
 
 
+def get_file_chunk_service(
+    db: Annotated[AsyncSession, Depends(get_db_session)],
+) -> FileService:
+    fcr = FileChunkRepository(db)
+    return FileChunkService(fcr)
+
+
 def get_file_service(
     db: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> FileService:
-    r = FileRepository(db)
-    cr = FileChunkRepository(db)
-    return FileService(db, r, cr)
+    fr = FileRepository(db)
+    fcr = FileChunkRepository(db)
+    return FileService(fr, fcr)

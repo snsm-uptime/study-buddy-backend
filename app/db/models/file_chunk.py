@@ -23,6 +23,7 @@ class FileChunk(Base, SoftDeletableMixin, TimestampMixin):
         UUID(as_uuid=True), ForeignKey("files.id"), nullable=False
     )
 
+    file_name: Mapped[str] = mapped_column(Text, nullable=False)
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
 
     text: Mapped[str] = mapped_column(Text, nullable=False)

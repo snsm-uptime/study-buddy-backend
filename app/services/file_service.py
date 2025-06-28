@@ -55,7 +55,7 @@ class FileService:
             )
             match file_create_response:
                 case IOSuccess(value):
-                    return IOSuccess(FileRead.model_validate(value.unwrap()))
+                    return IOSuccess(FileRead.model_validate(value))
                 case _:
                     return IOFailure(
                         FormValidationError(
@@ -64,7 +64,7 @@ class FileService:
                         )
                     )
         else:
-            return IOSuccess(FileRead.model_validate(file_in_db.unwrap()))
+            return IOSuccess(FileRead.model_validate(file_in_db))
 
     async def upload_and_process_file(
         self,

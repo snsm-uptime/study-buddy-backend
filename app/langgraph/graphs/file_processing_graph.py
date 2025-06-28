@@ -1,5 +1,6 @@
-from app.protocols.embedding import EmbeddingService
+from app.protocols.embedding import EmbeddingServiceProtocol
 from app.protocols.parser import FileParserProtocol
+from app.protocols.vector_db import VectorDBServiceProtocol
 from app.services.chunk_splitter_service import ChunkSplitterService
 from app.services.file_chunk_service import FileChunkService
 from app.services.file_service import FileService
@@ -19,12 +20,13 @@ from app.langgraph.state import FileProcessingState
 
 
 def build_file_processing_graph(
-    chunk_splitter_service: ChunkSplitterService,
-    pdf_parser: FileParserProtocol,
-    file_service: FileService,
-    embedding_service: EmbeddingService,
-    # file_chunk_service: FileChunkService,
     # user_service: UserService,
+    chunk_splitter_service: ChunkSplitterService,
+    embedding_service: EmbeddingServiceProtocol,
+    file_chunk_service: FileChunkService,
+    file_service: FileService,
+    pdf_parser: FileParserProtocol,
+    vector_db_service: VectorDBServiceProtocol,
 ) -> CompiledStateGraph:
     builder = StateGraph(FileProcessingState)
 
@@ -34,10 +36,16 @@ def build_file_processing_graph(
     )
     builder.add_node(
         "split_chunks",
-        build_split_chunks_node(chunk_splitter_service=chunk_splitter_service),
+        build_split_chunks_node(
+            file_chunk_service=file_chunk_service,
+            chunk_splitter_service=chunk_splitter_service,
+        ),
     )
     builder.add_node(
-        "embed_chunks", build_embed_chunks_node(embedding_service=embedding_service)
+        "embed_chunks",
+        build_embed_chunks_node(
+            embedding_service=embedding_service, vector_db_service=vector_db_service
+        ),
     )
     builder.add_node("extract_concepts", build_extract_concepts_node)
     builder.add_node("persist_to_db", build_persist_to_db_node)

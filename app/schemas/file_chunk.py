@@ -20,7 +20,7 @@ class TransientChunk(BaseModel):
 class FileChunkBase(TransientChunk):
     file_name: str
     page_numbers: Iterable[NonNegativeInt] | None = None
-    section: str | None = None
+    sections: Iterable[str] | None = None
     content_type: str | None = None
 
 

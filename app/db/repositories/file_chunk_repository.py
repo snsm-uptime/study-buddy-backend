@@ -19,6 +19,7 @@ class FileChunkRepository:
         try:
             self.session.add_all(file_chunks)
             await self.session.flush()
+            await self.session.commit()
         except Exception as e:
             raise ValueError(f"Failed to create file chunks: {e}")
 
