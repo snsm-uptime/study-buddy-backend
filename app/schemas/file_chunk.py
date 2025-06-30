@@ -1,5 +1,6 @@
-from datetime import datetime, timezone
-from typing import Iterable, List
+from datetime import datetime
+from collections.abc import Iterable
+from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt
@@ -19,8 +20,8 @@ class TransientChunk(BaseModel):
 
 class FileChunkBase(TransientChunk):
     file_name: str
-    page_numbers: Iterable[NonNegativeInt] | None = None
-    sections: Iterable[str] | None = None
+    page_numbers: List[NonNegativeInt] | None = None
+    sections: List[str] | None = None
     content_type: str | None = None
 
 

@@ -39,7 +39,7 @@ class ChunkSplitterService:
                 yield FileChunkBase(
                     text=chunk_text,
                     chunk_index=chunk_index,
-                    page_numbers=page_numbers,
+                    page_numbers=list(page_numbers),
                     section=None,
                     file_name=file_name,
                 )
@@ -51,12 +51,11 @@ class ChunkSplitterService:
 
         if token_buffer:
             chunk_text = self.encoding.decode(token_buffer)
-            page_numbers = sorted(set(page_map))
+            page_numbers = set(page_map)
 
             yield FileChunkBase(
                 text=chunk_text,
                 chunk_index=chunk_index,
                 page_numbers=page_numbers,
-                section=None,
                 file_name=file_name,
             )

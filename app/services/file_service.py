@@ -55,7 +55,7 @@ class FileService:
             )
             match file_create_response:
                 case IOSuccess(value):
-                    return IOSuccess(FileRead.model_validate(value))
+                    return IOSuccess(FileRead.model_validate(value.unwrap()))
                 case _:
                     return IOFailure(
                         FormValidationError(

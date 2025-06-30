@@ -1,4 +1,6 @@
-from typing import List
+from datetime import datetime
+from typing import Any, List
+from uuid import UUID
 from returns.io import IOResult
 from app.protocols.embedding import EmbeddingServiceProtocol
 from chromadb import Client, Collection
@@ -28,20 +30,35 @@ class ChromaDBService(VectorDBServiceProtocol):
     async def upsert_chunks(
         self, chunks: list[FileChunkRead], embedding_service: EmbeddingServiceProtocol
     ) -> IOResult[List[List[float]], Exception]:
+        def normalize_metadata(chunk: FileChunkRead) -> dict[str, Any]:
+            raw = chunk.model_dump()
+
+            def to_scalar(value: Any) -> Any:
+                if isinstance(value, (str, int, float, bool)) or value is None:
+                    return value
+                if isinstance(value, list):
+                    return ",".join(map(str, value))
+                if isinstance(value, UUID):
+                    return str(value)
+                if isinstance(value, datetime):
+                    return value.isoformat()
+
+            return {k: to_scalar(v) for k, v in raw.items() if v is not None}
+
         documents = []
         metadatas = []
         ids = []
         embeddings = []
 
         for chunk in chunks:
-            embedding = embedding_service.embed(chunk)
+            embedding = embedding_service.embed(chunk.text)
             if embedding is None:
                 continue
 
             documents.append(chunk.text)
             embeddings.append(embedding)
-            ids.append(chunk.id)
-            metadatas.append(chunk.model_dump(exclude={"text"}))
+            ids.append(str(chunk.id))
+            metadatas.append(normalize_metadata(chunk))
 
         if documents:
             self.collection.add(
@@ -50,4 +67,4 @@ class ChromaDBService(VectorDBServiceProtocol):
                 metadatas=metadatas,
                 ids=ids,
             )
-            return IOResult.success(embeddings)
+            return IOResult.from_value(embeddings)
