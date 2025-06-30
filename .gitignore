@@ -47,3 +47,19 @@ node_modules/
 *.swp
 *.bak
 *~
+
+# --- ChromaDB ---
+chroma_db/
+chroma.db/
+*.chroma/
+
+# General SQLite/duckdb-style persistence files
+*.db
+*.bin
+*.sqlite
+*.duckdb
+*.sqlite3
+*.log
+
+# If you're using local vector stores inside a mounted folder
+vector_store/
