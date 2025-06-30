@@ -1,17 +1,15 @@
-from pathlib import Path
 from returns.io import IOSuccess
 
 from app.langgraph.state import FileProcessingState
 from app.services import ChunkSplitterService
 from app.services.file_chunk_service import FileChunkService
-from isort import file
 
 splitter = ChunkSplitterService()
 
 
 def build_split_chunks_node(
     file_chunk_service: FileChunkService, chunk_splitter_service: ChunkSplitterService
-):
+) -> callable:
     async def split_chunks_node(state: FileProcessingState) -> FileProcessingState:
         fid = state["file"].id
         check_db_result = await file_chunk_service.get_by_file_id(file_id=fid)

@@ -61,10 +61,12 @@ class ChromaDBService(VectorDBServiceProtocol):
             metadatas.append(normalize_metadata(chunk))
 
         if documents:
-            self.collection.add(
+            self.collection.upsert(
                 documents=documents,
                 embeddings=embeddings,
                 metadatas=metadatas,
                 ids=ids,
             )
             return IOResult.from_value(embeddings)
+        else:
+            raise ValueError("No valid chunks to upsert.")

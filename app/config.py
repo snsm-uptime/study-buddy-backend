@@ -8,6 +8,14 @@ class Settings:
         return int(os.getenv("APP_PORT", 8000))
 
     @property
+    def chroma_persist_directory(self) -> str:
+        return os.getenv("CHROMA_PERSIST_DIRECTORY", "./chroma_db")
+
+    @property
+    def chroma_collection_name(self) -> str:
+        return os.getenv("CHROMA_COLLECTION_NAME", "ctx_collection")
+
+    @property
     def database_url(self) -> str:
         return os.getenv(
             "DATABASE_URL",
@@ -35,8 +43,12 @@ class Settings:
         return int(os.getenv("MIN_LAST_CHUNK", 200))
 
     @property
-    def ollama_base_url(self) -> str:
-        return os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+    def ollama_host(self) -> str:
+        return os.getenv("OLLAMA_HOST", "http://ollama:11434")
+
+    @property
+    def ollama_model(self) -> str:
+        return os.getenv("OLLAMA_MODEL", "deepseek-r1:1.5b")
 
     @property
     def overlap_tokens(self) -> int:
@@ -45,14 +57,6 @@ class Settings:
     @property
     def tiktoken_model(self) -> str:
         return os.getenv("TIKTOKEN_MODEL", "gpt2")
-
-    @property
-    def chroma_persist_directory(self) -> str:
-        return os.getenv("CHROMA_PERSIST_DIRECTORY", "./chroma_db")
-
-    @property
-    def chroma_collection_name(self) -> str:
-        return os.getenv("CHROMA_COLLECTION_NAME", "ctx_collection")
 
 
 @lru_cache()

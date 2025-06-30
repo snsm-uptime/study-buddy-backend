@@ -4,6 +4,7 @@ from app.protocols.vector_db import VectorDBServiceProtocol
 from app.services.chunk_splitter_service import ChunkSplitterService
 from app.services.file_chunk_service import FileChunkService
 from app.services.file_service import FileService
+from app.services.llm.llm_service import LLMService
 from app.services.parsers.pdf_parser import PDFPlumberParser
 from app.services.user_service import UserService
 from langgraph.graph import END, StateGraph
@@ -47,7 +48,10 @@ def build_file_processing_graph(
             embedding_service=embedding_service, vector_db_service=vector_db_service
         ),
     )
-    builder.add_node("extract_concepts", build_extract_concepts_node)
+    builder.add_node(
+        "extract_concepts",
+        build_extract_concepts_node(llm_service=LLMService()),
+    )
     builder.add_node("persist_to_db", build_persist_to_db_node)
 
     builder.set_entry_point("parse_file")

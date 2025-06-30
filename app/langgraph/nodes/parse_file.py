@@ -10,7 +10,7 @@ from app.services.file_service import FileService
 
 def build_parse_file_node(
     file_service: FileService, parser: FileParserProtocol
-) -> FutureResult[FileProcessingState, TextExtractionError]:
+) -> callable:
     async def parse_file_node(state: FileProcessingState) -> FileProcessingState:
         """
         Here the file is parsed and the text is extracted.
