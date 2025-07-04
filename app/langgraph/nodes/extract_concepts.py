@@ -11,9 +11,13 @@ def build_extract_concepts_node(llm_service: LLMService) -> callable:
         for chunk in state["chunks"]:
             if not chunk.text:
                 continue
-            tasks.append(ces.extract(chunk.text))
+            tasks.append(
+                ces.extract(
+                    text=chunk.text,
+                    metadata=chunk.model_dump_json(exclude="text", indent=2),
+                )
+            )
         results = await gather(*tasks)
-        print(results)
         state["step"] = "persist_to_db"
         return state
 

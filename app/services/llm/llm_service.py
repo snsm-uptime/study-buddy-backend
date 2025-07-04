@@ -1,4 +1,5 @@
 import json
+from string import Template
 import re
 from enum import Enum
 from pathlib import Path
@@ -33,27 +34,30 @@ class LLMService:
         self.model = model
         self.pull_model()
 
-    def _get_prompt(
-        self, prompt_template: PromptTemplate, input_vars: dict[str, Any]
-    ) -> str:
+    def _get_prompt(self, prompt_template: PromptTemplate, **kwargs) -> str:
         """
         Formats the prompt template with the provided input variables.
         """
         template = prompt_template.template
         if not template:
             raise ValueError(f"Prompt template {prompt_template.value} is empty.")
-        return template.format(**input_vars)
+        n_template = Template(template).substitute(**kwargs)
+        return n_template
 
     @future_safe
     async def query(
-        self, template: PromptTemplate, input_vars: dict[str, Any]
+        self, prompt_template: PromptTemplate, input_vars: dict[str, Any]
     ) -> ConceptExtractionResponse:
-        prompt = self._get_prompt(template, input_vars)
+        # prompt = self._get_prompt(template, input_vars)
         schema = ConceptExtractionResponse.model_json_schema()
+        messages = [
+            {"role": "system", "content": prompt_template.template},
+            {"role": "user", "content": str(input_vars)},
+        ]
         try:
             response = ollama.chat(
                 format=schema,
-                messages=[{"role": "system", "content": prompt}],
+                messages=messages,
                 model=self.model,
             )
             content = response["message"]["content"]

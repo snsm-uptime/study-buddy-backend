@@ -57,7 +57,7 @@ async def upload_file(
         vector_db_service=vector_db_service,
     )
     file_processing_result = await graph.ainvoke(state)
-    return file_processing_result["state"].file_id
+    return file_processing_result
     # match result:
     #     case IOSuccess(file_read):
     #         return file_read.unwrap()  # type: ignore[no-any-return]
