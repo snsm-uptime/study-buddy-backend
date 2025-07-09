@@ -1,3 +1,6 @@
+import logging
+from rich.logging import RichHandler
+from rich.console import Console
 import os
 from functools import lru_cache
 
@@ -62,3 +65,30 @@ class Settings:
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
+
+
+def setup_logging() -> None:
+    console = Console(force_terminal=True)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(name)s | %(levelname)-8s | %(message)s",
+        datefmt="[%Y-%m-%d %H:%M:%S]",
+        handlers=[
+            RichHandler(
+                show_time=False,
+                show_level=False,
+                show_path=False,
+                rich_tracebacks=True,
+                markup=True,
+                console=console,
+            )
+        ],
+        force=True,
+    )
+
+    # Optional: silence noisy loggers
+    for noisy in ("uvicorn.access", "httpx", "sqlalchemy.engine"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
+
+
+logger = logging.getLogger("StudyBuddy")
