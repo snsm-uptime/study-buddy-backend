@@ -9,15 +9,19 @@ class FileProcessingState(TypedDict, total=False):
     chunks: List[FileChunkRead]
     concepts: List[str]
     content_type: str
+    errors: List[str]
+    domains: List[str]
     embeddings: List[str]
-    file_buffer: BinaryIO
     file: FileChunkRead
-    title: str
+    file_buffer: BinaryIO
     pages: List[PageText]
     parsed: bool
     saved: bool
     size_bytes: float
+    title: str
+    topics: List[str]
     user_id: str
+
     step: Literal[
         "parse_file",
         "split_chunks",

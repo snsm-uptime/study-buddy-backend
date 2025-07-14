@@ -152,3 +152,9 @@ In classical mechanics, Newton's Second Law states that force equals mass times 
 ---
 
 Use these examples to calibrate your extractions and ensure consistency across varying domains and styles.
+
+# Ideas
+
+* [ ] Sort concepts by importance
+* [ ] Trunc concepts list
+* [ ] Importance of extracting actors / characters too

@@ -1,6 +1,7 @@
 from returns.future import FutureResult
-from returns.io import IOSuccess, IOFailure
+from returns.io import IOFailure, IOSuccess
 
+from app.config import logger
 from app.errors import TextExtractionError
 from app.langgraph.state import FileProcessingState
 from app.protocols.parser import FileParserProtocol
@@ -40,12 +41,18 @@ def build_parse_file_node(
             )
             match file_response:
                 case IOSuccess(value):
-                    state["file"] = value.unwrap()
+                    f = value.unwrap()
+                    state["file"] = f
+                    logger.info(
+                        f"File [bold green]created[/bold green] in database: {f.id}"
+                    )
                 case IOFailure(error):
+                    logger.error(f"Failed to create file in database: {error}")
                     raise TextExtractionError(
-                        f"Failed to create file in database: {error.message}"
+                        f"Failed to create file in database: {error}"
                     )
                 case _:
+                    logger.error("Unexpected error while creating file in database")
                     raise TextExtractionError(
                         "Unexpected error while creating file in database"
                     )
@@ -54,6 +61,8 @@ def build_parse_file_node(
             state.pop("file_buffer", None)
             if not isinstance(result, list):
                 raise TextExtractionError(str(result.failure()))
+
+            logger.info(f"Found [bold yellow]{len(result)}[/bold yellow] pages")
 
             state["pages"] = result
             state["parsed"] = True

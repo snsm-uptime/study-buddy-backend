@@ -14,9 +14,8 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
-    logger.info("[bold green]this is a test[/bold green] without color")
     yield
-    logger.info("Stopping application")
+    logger.info("[bold red]Stopping application[/bold red]")
 
 
 app = FastAPI(lifespan=lifespan)

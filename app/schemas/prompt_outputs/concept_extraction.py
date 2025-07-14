@@ -3,8 +3,8 @@ from typing import List
 
 
 class ConceptExtractionResponse(BaseModel):
-    domain: str | None
     concepts: List[str] | None
-    topics: List[str] | None
+    domain: str | None
     error: str | None
     minimum_tokens: int | None
+    topics: List[str] | None
