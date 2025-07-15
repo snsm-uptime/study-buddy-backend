@@ -1,19 +1,18 @@
 import os
-from collections.abc import AsyncGenerator, Generator
+import time
+from collections.abc import AsyncGenerator
+from pathlib import Path
 from typing import AsyncIterator
 from unittest.mock import AsyncMock
 
+import pdfplumber
 import pytest
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient, get
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.config import get_settings
+from app.config import get_settings, logger
 from app.db.base import Base
 from app.dependencies.database import get_db_session
 from app.dependencies.file import get_file_service
@@ -73,3 +72,32 @@ async def mock_user_service() -> AsyncGenerator[AsyncMock, None, None]:
     app.dependency_overrides[get_user_service] = lambda: mock
     yield mock
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture()
+def timer():
+    times = {}
+
+    def start(label="default"):
+        times[label] = time.perf_counter()
+
+    def stop(label="default"):
+        elapsed = time.perf_counter() - times[label]
+        logger.info(f"\n[⏱] Timer '{label}': {elapsed:.4f} seconds")
+        return elapsed
+
+    return {"start": start, "stop": stop}
+
+
+@pytest.fixture
+def extract_pdf_text():
+    def _extract(file_path: Path, page_start: int, page_end: int) -> str:
+        with pdfplumber.open(file_path) as pdf:
+            total = len(pdf.pages)
+            if page_start >= total or page_end > total:
+                raise ValueError("Page range out of bounds")
+            return "\n".join(
+                page.extract_text() or "" for page in pdf.pages[page_start:page_end]
+            )
+
+    return _extract

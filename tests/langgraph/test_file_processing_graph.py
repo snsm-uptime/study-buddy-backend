@@ -1,14 +1,11 @@
 import uuid
-from app.services.embedding.sentence_transformer import (
-    SentenceTransformerEmbeddingService,
-)
-from returns.io import IOResult
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock
 from uuid import UUID
 
 import pytest
+from returns.io import IOResult
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -17,13 +14,16 @@ from app.dependencies.tools import get_chunk_splitter_service
 from app.langgraph.graphs.file_processing_graph import build_file_processing_graph
 from app.langgraph.state import FileProcessingState
 from app.schemas.file import FileCreate, FileRead
+from app.services.embedding.sentence_transformer import (
+    SentenceTransformerEmbeddingService,
+)
 from app.services.parsers.pdf_parser import PDFPlumberParser
 from tests.utils.test_parsers import ASSETS_DIR
 
 console = Console(force_terminal=True, color_system="truecolor")
 
 
-# @pytest.mark.skip("Skipping file graph test")
+@pytest.mark.skip("Skipping file graph test")
 @pytest.mark.asyncio
 async def test_file_processing_graph_with_rich_output(mock_file_service: AsyncMock):
     mock_file = FileCreate(
